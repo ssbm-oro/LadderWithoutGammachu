@@ -87,8 +87,10 @@ else
                     <td>@standing.Wins</td>
                     <td>@standing.Losses</td>
                     <td>@standing.Ties</td>
-                    <td>@(standing.Wins + standing.Losses + standing.Ties)</td>
-                    <td>@(standing.Wins / (standing.Wins + standing.Losses + standing.Ties))</td>
+                    @{int total = standing.Wins + standing.Losses + standing.Ties;}
+                    <td>@(total)</td>
+                    @{float winPercent = (float)standing.Wins / (float)total; }
+                    <td>@winPercent.ToString("P")</td>
                 </tr>
 
             }
