@@ -1,0 +1,133 @@
+﻿@page "/"
+@using System.Net.Http
+@using System.Net.Http.Json
+@using System.Text.Json
+@using System.Text.Json.Serialization;
+@using System.Net.Http.Headers
+@using LadderWithoutGammachu.Clients.Ladder
+@inject LadderClient Ladder
+@inject NavigationManager NavigationManager
+
+<h1>Ladder Rankings (without Gammachuu)</h1>
+
+@if (seasons != null)
+{
+<Dropdown TItem="int" OnSelected="@OnSeasonSelected" >
+    <InitialTip>Select a Season</InitialTip>
+    <ChildContent>
+        <DropdownListItem Item="@zero">Lifetime</DropdownListItem>
+        @foreach(var season in seasons)
+        {
+            <DropdownListItem Item="@season.season_id">@season.SeasonName</DropdownListItem>
+            @if(season.IsCurrentSeason)
+                break;
+        }
+    </ChildContent>
+</Dropdown>
+}
+
+@if (flags != null)
+{
+<Dropdown TItem="int" OnSelected="@OnFlagSelected" >
+    <InitialTip>Select a Mode</InitialTip>
+    <ChildContent>
+        <DropdownListItem Item="@zero">All Modes</DropdownListItem>
+        @foreach(var flag in flags)
+        {
+            <DropdownListItem Item="@flag.flag_id">@flag.Mode</DropdownListItem>
+        }
+    </ChildContent>
+</Dropdown>
+}
+
+@if (standings == null)
+{
+    <p><em>Loading...</em></p>
+    gammachuuFound = false;
+}
+else
+{
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Rank</th>
+                <th>Racer</th>
+                <th>Rating</th>
+                <th>Last Change</th>
+                <th>Wins</th>
+                <th>Losses</th>
+                <th>Ties</th>
+                <th>Total</th>
+                <th>Win %</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                gammachuuFound = false;
+            }
+            @foreach (var standing in standings)
+            {
+                @if (standing.RacerName == Gammachuu.RacerName)
+                {
+                    gammachuuFound = true;
+                    continue;
+                }
+                <tr>
+                    @if(gammachuuFound)
+                    {
+                        <td>@(standing.Rank - 1)</td>
+                    }
+                    else
+                    {
+                        <td>@standing.Rank</td>
+                    }
+                    <td>@standing.RacerName</td>
+                    <td>@standing.Rating</td>
+                    <td>@standing.Change</td>
+                    <td>@standing.Wins</td>
+                    <td>@standing.Losses</td>
+                    <td>@standing.Ties</td>
+                    <td>@(standing.Wins + standing.Losses + standing.Ties)</td>
+                    <td>@(standing.Wins / (standing.Wins + standing.Losses + standing.Ties))</td>
+                </tr>
+
+            }
+        </tbody>
+    </table>
+}
+
+@code {
+    private Standing[] standings;
+    private Season[] seasons;
+    private Flag[] flags;
+    const int zero = 0;
+    const int gammachuuId = 140;
+    private Racer Gammachuu;
+    private int selectedSeason = 0;
+    private int selectedFlag = 0;
+    private bool gammachuuFound = false;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var racers = await Ladder.GetActiveRacersAsync();
+        Gammachuu = racers.Where(x => x.racer_id == gammachuuId).First();
+        seasons = await Ladder.GetSeasonsAsync();
+        flags = await Ladder.GetFlagsAsync();
+
+        standings = await Ladder.GetStandingsAsync(selectedSeason, selectedFlag);
+    }
+    private async void OnSeasonSelected(int selection)
+    {
+        selectedSeason = selection;
+        standings = (await Ladder.GetStandingsAsync(selectedSeason, selectedFlag));
+        StateHasChanged();
+    }
+
+    private async void OnFlagSelected(int selection)
+    {
+        selectedFlag = selection;
+        standings = (await Ladder.GetStandingsAsync(selectedSeason, selectedFlag));
+        StateHasChanged();
+    }
+}
