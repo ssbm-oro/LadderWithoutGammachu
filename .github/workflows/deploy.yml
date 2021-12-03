@@ -18,8 +18,7 @@ jobs:
     
     - name: Change twitch redirect to GH pages
       run: |
-        sed -i 's/localhost:5001/ssbm-oro.github.io\/LadderTwitchScheduler/g' src/LadderTwitchScheduler/Pages/Index.razor
-        sed -i s/xxVERSIONxx/${GITHUB_REF/refs\/tags\//}/ src/LadderTwitchScheduler/Shared/MainLayout.razor
+        sed -i 's/localhost:5001/ssbm-oro.github.io\/LadderWithoutGammachu/g' LadderWithoutGammachu/Pages/Index.razor
     
     # sets up .NET Core SDK 3.1
     - name: Setup .NET Core SDK
@@ -29,11 +28,11 @@ jobs:
         
     # publishes Blazor project to the release-folder
     - name: Publish .NET Core Project
-      run: dotnet publish src/LadderTwitchScheduler/LadderTwitchScheduler.csproj -c Release -o release --nologo
+      run: dotnet publish LadderWithoutGammachu.csproj -c Release -o release --nologo
 
-    # changes the base-tag in index.html from '/' to 'LadderTwitchScheduler' to match GitHub Pages repository subdirectory
-    - name: Change base-tag in index.html from / to LadderTwitchScheduler
-      run: sed -i 's/<base href="\/" \/>/<base href="\/LadderTwitchScheduler\/" \/>/g' release/wwwroot/index.html
+    # changes the base-tag in index.html from '/' to 'LadderWithoutGammachu' to match GitHub Pages repository subdirectory
+    - name: Change base-tag in index.html from / to LadderWithoutGammachu
+      run: sed -i 's/<base href="\/" \/>/<base href="\/LadderWithoutGammachu\/" \/>/g' release/wwwroot/index.html
       
 
 
